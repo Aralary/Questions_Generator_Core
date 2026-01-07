@@ -21,3 +21,33 @@ python.exe -m venv venv
 ```
 pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu118
 ```
+
+### Варианты запуска
+1) Поэтапно:
+- Этап подготовки датасетов
+```
+python src/main.py --mode prepare
+```
+
+- Этап обучения адаптеров
+```
+python src/main.py --mode train
+```
+
+- Этап генерации билетов
+
+```
+Криптография, 5 вопросов, 10 билетов:
+python src/main.py --mode generate --domain crypto --num-questions 5 --num-tickets 10
+
+Компьютерные сети, 3 вопроса, 5 билетов:
+python src/main.py --mode generate --domain networks --num-questions 3 --num-tickets 5
+
+Алгоритмы, 2 вопроса, 8 билетов:
+python src/main.py --mode generate --domain algorithms --num-questions 2 --num-tickets 8
+```
+
+2) Запуск всех этапов одной командой
+```
+python src/main.py --mode full --domain crypto --num-questions 3 --num-tickets 5
+```
