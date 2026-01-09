@@ -1,7 +1,3 @@
-"""
-Главная точка входа для системы генерации экзаменационных билетов.
-"""
-
 import sys
 import argparse
 from pathlib import Path
@@ -16,13 +12,13 @@ from src.generation import ExamTicketGenerator
 from src.utils import print_section, logger
 from src.core import PATH_CONFIG, DOMAIN_CONFIG
 
+
 def setup_example_data():
-    """Создает примеры файлов с вопросами."""
+    """Создает примеры файлов с вопросами в новой структуре."""
     train_data_dir = PATH_CONFIG.train_data_dir
-    train_data_dir.mkdir(parents=True, exist_ok=True)
     
     examples = {
-        "cryptography.txt": [
+        "cryptography": [
             "Объясните принцип работы алгоритма RSA и приведите математическое обоснование процедур генерации ключей, шифрования и расшифрования.",
             "Опишите режимы работы блочных шифров (ECB, CBC, CTR, GCM). В чем заключаются преимущества и недостатки каждого режима?",
             "Что такое криптографическая хеш-функция и каким требованиям она должна удовлетворять? Объясните атаки на хеш-функции.",
@@ -34,7 +30,7 @@ def setup_example_data():
             "Объясните принцип работы алгоритма AES. Какие операции выполняются в каждом раунде?",
             "Что такое постквантовая криптография и какие подходы в ней используются?"
         ],
-        "networks.txt": [
+        "networks": [
             "Опишите модель OSI и стек протоколов TCP/IP. Какие функции выполняет каждый уровень?",
             "Объясните принцип работы протокола TCP. Как обеспечивается надежная доставка данных?",
             "Что такое IP-адресация и маска подсети? Объясните различие между IPv4 и IPv6.",
@@ -46,7 +42,7 @@ def setup_example_data():
             "Что такое VLAN и для чего используется сегментация сети?",
             "Опишите протокол HTTPS и процесс установления защищенного соединения."
         ],
-        "algorithms.txt": [
+        "algorithms": [
             "Опишите структуру данных 'красно-черное дерево'. Какие инварианты должны соблюдаться?",
             "Объясните принцип работы алгоритма быстрой сортировки (QuickSort) и его временную сложность.",
             "Что такое динамическое программирование? Приведите пример классической задачи.",
@@ -60,18 +56,40 @@ def setup_example_data():
         ]
     }
     
-    for filename, questions in examples.items():
-        filepath = train_data_dir / filename
-        with open(filepath, 'w', encoding='utf-8') as f:
+    for domain_key, questions in examples.items():
+        # Создаем новую структуру
+        domain_dir = train_data_dir / domain_key
+        questions_dir = domain_dir / "questions"
+        lectures_dir = domain_dir / "lectures"
+        
+        questions_dir.mkdir(parents=True, exist_ok=True)
+        lectures_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Сохраняем вопросы
+        questions_file = questions_dir / "questions.txt"
+        with open(questions_file, 'w', encoding='utf-8') as f:
             f.write('\n\n'.join(questions))
+        
+        # Создаем заглушку для лекций
+        readme_file = lectures_dir / "README.txt"
+        with open(readme_file, 'w', encoding='utf-8') as f:
+            f.write(
+                f"Папка для лекций по домену '{domain_key}'.\n\n"
+                "Поддерживаемые форматы: PDF, PPTX\n\n"
+                "Добавьте файлы лекций в эту папку, например:\n"
+                "  - lecture_01.pdf\n"
+                "  - lecture_02.pptx\n"
+            )
     
-    logger.info(f"✓ Созданы примеры файлов в {train_data_dir}")
+    logger.info(f"✓ Создана новая структура в {train_data_dir}")
 
-def prepare_data():
+
+def prepare_data(use_lectures: bool = True, lecture_ratio: float = 0.3):
     """Этап 1: Подготовка датасетов."""
     print_section("ЭТАП 1: ПОДГОТОВКА ДАТАСЕТОВ")
-    generator = DatasetGenerator()
+    generator = DatasetGenerator(use_lectures=use_lectures, lecture_ratio=lecture_ratio)
     generator.prepare_all_datasets()
+
 
 def train_adapters():
     """Этап 2: Обучение адаптеров."""
@@ -79,12 +97,12 @@ def train_adapters():
     trainer = AdapterTrainer()
     trainer.train_all_adapters()
 
+
 def generate_tickets(domain: str, num_questions: int, num_tickets: int):
     """Этап 3: Генерация билетов."""
     print_section("ЭТАП 3: ГЕНЕРАЦИЯ БИЛЕТОВ")
     
     generator = ExamTicketGenerator()
-    
     tickets = generator.generate_multiple_tickets(
         domain_key=domain,
         num_questions=num_questions,
@@ -102,6 +120,7 @@ def generate_tickets(domain: str, num_questions: int, num_tickets: int):
     filepath = generator.save_tickets(tickets, domain)
     print(f"\n✓ Все билеты сохранены: {filepath}")
 
+
 def main():
     """Основная функция с CLI."""
     parser = argparse.ArgumentParser(
@@ -110,10 +129,10 @@ def main():
         epilog="""
 Примеры использования:
   %(prog)s --setup-example --mode full
-  %(prog)s --mode prepare
+  %(prog)s --mode prepare --use-lectures --lecture-ratio 0.4
   %(prog)s --mode train
   %(prog)s --mode generate --domain crypto --num-questions 5 --num-tickets 10
-        """
+"""
     )
     
     parser.add_argument(
@@ -125,8 +144,8 @@ def main():
     
     parser.add_argument(
         '--domain',
-        choices=['crypto', 'networks', 'algorithms'],
-        default='crypto',
+        choices=['cryptography', 'networks', 'algorithms'],
+        default='cryptography',
         help='Предметная область для генерации'
     )
     
@@ -148,7 +167,28 @@ def main():
     parser.add_argument(
         '--setup-example',
         action='store_true',
-        help='Создать примеры файлов с вопросами'
+        help='Создать примеры файлов с вопросами в новой структуре'
+    )
+    
+    # НОВЫЕ ПАРАМЕТРЫ ДЛЯ ЛЕКЦИЙ
+    parser.add_argument(
+        '--use-lectures',
+        action='store_true',
+        default=True,
+        help='Использовать лекции (PDF/PPTX) при обучении (по умолчанию: True)'
+    )
+    
+    parser.add_argument(
+        '--no-lectures',
+        action='store_true',
+        help='НЕ использовать лекции (только вопросы)'
+    )
+    
+    parser.add_argument(
+        '--lecture-ratio',
+        type=float,
+        default=0.3,
+        help='Доля примеров с контекстом из лекций (0.0-1.0, по умолчанию: 0.3)'
     )
     
     args = parser.parse_args()
@@ -157,6 +197,9 @@ def main():
     print("Mistral 7B + LoRA Fine-tuning")
     print(f"Проект: {PROJECT_ROOT}\n")
     
+    # Определяем, использовать ли лекции
+    use_lectures = args.use_lectures and not args.no_lectures
+    
     # Создание примеров
     if args.setup_example:
         setup_example_data()
@@ -164,7 +207,7 @@ def main():
     # Выполнение
     try:
         if args.mode in ['prepare', 'full']:
-            prepare_data()
+            prepare_data(use_lectures=use_lectures, lecture_ratio=args.lecture_ratio)
         
         if args.mode in ['train', 'full']:
             train_adapters()
@@ -173,11 +216,12 @@ def main():
             generate_tickets(args.domain, args.num_questions, args.num_tickets)
         
         print_section("✓ ВЫПОЛНЕНО УСПЕШНО")
-    
+        
     except Exception as e:
         logger.error(f"Ошибка: {e}", exc_info=True)
         print_section("✗ ОШИБКА ВЫПОЛНЕНИЯ")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -1,7 +1,3 @@
-"""
-Модуль для генерации экзаменационных билетов.
-"""
-
 import torch
 from pathlib import Path
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig

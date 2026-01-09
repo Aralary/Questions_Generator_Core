@@ -95,10 +95,10 @@ class DomainConfig:
         if self.domains is None:
             adapters_dir = DATA_DIR / "adapters"
             self.domains = {
-                "crypto": {
+                "cryptography": {
                     "file_patterns": ["cryptography", "crypto"],
                     "display_name": "криптографии",
-                    "adapter_path": adapters_dir / "crypto"
+                    "adapter_path": adapters_dir / "cryptography"
                 },
                 "networks": {
                     "file_patterns": ["networks", "network", "сети"],

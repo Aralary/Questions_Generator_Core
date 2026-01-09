@@ -1,7 +1,3 @@
-"""
-Модуль для загрузки и конфигурации Mistral 7B с LoRA.
-"""
-
 import torch
 from transformers import (
     AutoModelForCausalLM,

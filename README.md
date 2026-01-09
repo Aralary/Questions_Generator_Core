@@ -38,7 +38,7 @@ python src/main.py --mode train
 
 ```
 Криптография, 5 вопросов, 10 билетов:
-python src/main.py --mode generate --domain crypto --num-questions 5 --num-tickets 10
+python src/main.py --mode generate --domain cryptography --num-questions 5 --num-tickets 10
 
 Компьютерные сети, 3 вопроса, 5 билетов:
 python src/main.py --mode generate --domain networks --num-questions 3 --num-tickets 5
@@ -49,5 +49,5 @@ python src/main.py --mode generate --domain algorithms --num-questions 2 --num-t
 
 2) Запуск всех этапов одной командой
 ```
-python src/main.py --mode full --domain crypto --num-questions 3 --num-tickets 5
+python src/main.py --mode full --domain cryptography --num-questions 3 --num-tickets 5
 ```

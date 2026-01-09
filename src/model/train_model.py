@@ -1,7 +1,3 @@
-"""
-Модуль для обучения LoRA-адаптеров.
-"""
-
 import torch
 from pathlib import Path
 from transformers import TrainingArguments
