@@ -1,0 +1,13 @@
+transformers>=4.40.0
+peft>=0.10.0
+datasets>=2.18.0
+accelerate>=0.28.0
+bitsandbytes>=0.43.0
+trl>=0.12.0
+scipy
+torch==2.5.1
+torchvision==0.20.1
+torchaudio==2.5.1
+hf_xet
+pdfplumber==0.10.3
+python-pptx==0.6.23
